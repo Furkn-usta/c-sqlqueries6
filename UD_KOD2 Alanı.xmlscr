@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="ZorunluAlan" Enabled="true" Priority="0" ScriptName="UD_KOD2 Alanı ">
+  <Events>
+    <Event Enabled="true" ObjectName="InvoiceEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="InvoiceEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 25.09.2023 15:00:59
+function OnBeforePost(sender, e)
+ {
+	if (BaseObject == null || BaseObject.CurrentRow == null || BaseObject.CurrentRow.Row == null   )
+		return null;
+		
+	
+		foreach(ri in BaseObject.Data.Tables["IM_ReceiptItem"].Select("RecId is not null"))
+			{ 
+			 if( !ri.IsNull("InventoryId")){
+			query="Select UD_KOD2,InventoryCode from IM_Item C with (nolock) where  C.CompanyId="+Convert.ToInt32(BaseObject.ActiveSession.Company.RecId)+" and   RecId="+ri["InventoryId"].ToString();
+		  		  dt = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt", query);
+		  		
+		  		  if((dt.Rows[0][0]==null || dt.Rows[0][0].ToString()=="")  &amp;&amp; BaseObject.IsCopyEntity)
+		   		 { 
+					BaseObject.ShowMessage( dt.Rows[0][1].ToString()+" Kodlu Malzemenin İçersinde bulunan UD_KOD2 Alanı boş olamaz! {scr:ZorunluAlan}");
+					e.Cancel = true;
+					return null;
+					
+				}
+				}
+					 if( !ri.IsNull("ServiceCardId")){
+					query="select UD_Code,ServiceCode from SM_Service where CompanyId="+Convert.ToInt32(BaseObject.ActiveSession.Company.RecId)+" and  RecId="+ri["ServiceCardId"].ToString();
+		  		  dt = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt", query);
+		  		  if((dt.Rows[0][0]==null || dt.Rows[0][0].ToString()=="") &amp;&amp; BaseObject.IsCopyEntity )
+		   		 {
+					BaseObject.ShowMessage(dt.Rows[0][1].ToString()+" Kodlu Hizmet Kartı İçersinde UD_KOD2 Alanı boş olamaz! {scr:ZorunluAlan}");
+					e.Cancel = true;
+					return null;
+				}
+				 
+					 
+			 }
+		}
+	}</ScriptText>
+</ScriptDefinition>

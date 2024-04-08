@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="UretimeCikisKontrol" Enabled="true" Priority="0" ScriptName="UretimeCikisKontrol">
+  <Events>
+    <Event Enabled="true" ObjectName="InventoryReceiptEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="InventoryReceiptEN" />
+  </Events>
+  <Histories>
+    <History EditedBy="Furkan Usta" EntryDate="2023-03-01T00:00:00">
+      <Change>Kumaş için varyant kontrolü yaparak planlamada gelen miktardan fazla üretime çıkış yapılamaması için kontrol scripti </Change>
+    </History>
+  </Histories>
+  <ScriptText>//Generated on 1.03.2023 09:48:45
+
+function OnBeforePost(sender,ev)
+{		
+er_kod="";
+gelen_mik = 0m ;
+uretime_cikan_mik = 0m ; 		
+	if (BaseObject != null 
+	&amp;&amp; BaseObject.CurrentRow != null 
+	&amp;&amp; BaseObject.CurrentRow.Row != null 
+	&amp;&amp; Convert.ToInt16(BaseObject.CurrentRow.Row["ReceiptType"]) == 140)
+	{
+	
+		
+	if(BaseObject.CurrentRow.Row["AccessCode"].ToString()=="FABRIC")
+	er_kod="1";	
+	if(BaseObject.CurrentRow.Row["AccessCode"].ToString()=="TRIM")
+	return null;
+		foreach(dr in BaseObject.Data.Tables["IM_ItemAllocation"].Select(""))
+		{
+		if(dr.IsNull("InventoryReceiptType") || dr.IsNull("InventoryId") || dr.IsNull("ItemVariant1Code") || dr.IsNull("WorkOrderItemId") )
+			return null;
+			query = "select isnull((select cast(sum(isnull(Quantity,0)) as decimal (15,2)) from (select case when IA.InventoryReceiptType ="+Convert.ToInt32(dr["InventoryReceiptType"])+" then -1*isnull(IA.Quantity,0) else isnull(IA.Quantity,0) end Quantity ";
+			query += "from IM_ItemAllocation IA with (nolock) ";
+			query += " left join IM_ItemVariant IV with (nolock) on (IV.RecId = IA.InventoryVariantId) ";
+			query += " left join IM_VariantItem VI with (nolock) on (VI.RecId = IV.Variant1Id) ";
+			query += " left join IM_VariantItem VI2 with (nolock) on (VI2.RecId = IV.Variant2Id) ";
+			query +=" where IA.WorkOrderItemId = R.WorkOrderItemId  ";
+			query +="  and IA.InventoryId = R.InventoryId  ";
+			query +="  and isnull(VI.ItemCode,\'\') = isnull(R.Variant1,\'\') ";
+			query +="  and isnull(VI2.ItemCode,\'\') = isnull(R.Variant2,\'\') ";
+			query +=" and (IA.InventoryReceiptType in (1,16,17,40,122) or (IA.InventoryReceiptType = 100 and IA.InventoryReceiptSubType = 1001)) ";
+			query +=" and isnull(IA.IsReturned,0) = 0) A),0) [gln] ";
+			query +="  ,isnull((select cast(sum(isnull(IA.Quantity,0)) as decimal (15,2))  ";
+			query +="  from IM_ItemAllocation IA with (nolock)  ";
+			query +=" left join IM_ItemVariant IV with (nolock) on (IV.RecId = IA.InventoryVariantId) ";
+			query +="  left join IM_VariantItem VI with (nolock) on (VI.RecId = IV.Variant1Id) ";
+			query +=" left join IM_VariantItem VI2 with (nolock) on (VI2.RecId = IV.Variant2Id) ";
+			query +=" where IA.WorkOrderItemId = R.WorkOrderItemId    ";
+			query +="   and IA.InventoryId = R.InventoryId  and ";
+			query +=" isnull(VI.ItemCode,\'\') = isnull(R.Variant1,\'\') ";
+			query +=" and isnull(VI2.ItemCode,\'\') = isnull(R.Variant2,\'\') ";
+			query +=" and IA.InventoryReceiptType ="+Convert.ToInt32(dr["InventoryReceiptType"])+"),0) [u_c] ";
+			query +=" from MA_Requirement R with (nolock) ";
+			query +=" left join MA_WorkOrderItem WI with (nolock) on (WI.RecId=R.WorkOrderItemId) ";
+			query +="  left join MA_WorkOrder W with (nolock) on (W.RecId=WI.WorkOrderId) ";
+			query +="  left join IM_Item RI with (nolock) on (RI.RecId=R.InventoryId) ";
+			query +=" left join IM_Group A on (A.RecId=RI.GroupId) ";
+			query +=" where W.CompanyId = 1 and W.WorkOrderType = 15 and R.RequirementType = \'"+er_kod.ToString()+"\' ";
+			query +=" and R.WorkOrderItemId= "+dr["WorkOrderItemId"]+ " and "+dr["InventoryId"]+"= R.InventoryId ";
+			query += " and isnull(R.Variant1,\'\') = \'"+dr["ItemVariant1Code"].ToString()+"\'";
+			
+			dt = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt",query);
+			
+		if(dt==null || dt.Rows.Count&lt;0)
+		return null;
+		//MessageBox.Show(query.ToString());
+	global:gelen_mik=Convert.ToDecimal(dt.Rows[0]["gln"]);
+	global:uretime_cikan_mik=Convert.ToDecimal(dt.Rows[0]["u_c"]);
+	
+		}
+		
+	foreach(dr in BaseObject.Data.Tables["IM_ReceiptItem"].Select(""))
+		{
+	
+	verilen_miktar =Convert.ToDecimal(dr["Quantity"])+(global:uretime_cikan_mik);
+	if(verilen_miktar&gt;(global:gelen_mik)){
+	MessageBox.Show("Gelen Miktardan Fazla Üretime Çıkış Yapılamaz! Toplam Üretime Çıkan :"+verilen_miktar.ToString()+" Gelen Miktar: " +global:gelen_mik.ToString() + " {scr..UretimeCikisKontrol}");	
+	ev.Cancel=true;
+	return null;
+		}
+		}
+	}
+
+}</ScriptText>
+</ScriptDefinition>

@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="Model Onay işleminden sonra gün erteleme" Enabled="true" Priority="0" ScriptName="UnlluGunErteleme">
+  <Events>
+    <Event Enabled="true" ObjectName="CustomerTransactionEN" />
+    <Event Enabled="true" EventName="AfterPost" FunctionName="OnAfterPost" ObjectName="CustomerTransactionEN" />
+  </Events>
+  <Histories />
+  <ScriptText>function OnAfterPost(sender,eventArg){
+
+	////////////
+	//aşağidaki islemid= 2 yerine hangi işlem bitişi sonrasi script aktif olsun istiyorsanir onun recid yazin. İşlem kartlari CR_TransactionType 
+	islemId = 2;
+	//aşağidaki ertelenecekGun= 2 yerine ertelemek istediğiniz gün sayini yazin  
+	ertelenecekGun=2;
+	////////////
+	
+	if(BaseObject!=null 
+	&amp;&amp; BaseObject.CurrentRow!=null 
+	&amp;&amp; BaseObject.CurrentRow.Row!=null &amp;&amp;BaseObject.CurrentRow.Row["TranTypeId"].ToString() ==islemId.ToString()&amp;&amp;BaseObject.CurrentRow.Row["TranStatus"].ToString() =="4" ){
+		recid =Convert.ToInt32(BaseObject.CurrentRow.Row["RecId"].ToString());
+		wo =Convert.ToInt32(BaseObject.CurrentRow.Row["WorkOrderId"].ToString());
+		modulNo=Convert.ToInt32(BaseObject.CurrentRow.Row["ErpModuleNo"].ToString());
+		dd = Convert.ToDateTime(BaseObject.CurrentRow.Row["ActualDate"].ToString());
+
+		if(dd &gt; DateTime.MinValue)
+		{
+			
+			sb = new StringBuilder();
+			sb.AppendLine(String.Format("select * from CR_CustomerTransaction where WorkOrderId={0} and ErpModuleNo&gt;{1}",wo,modulNo));
+			dt = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction,  "dt", sb.ToString());
+			
+			if(dt !=  null &amp;&amp; dt.Rows.Count&gt;0)
+			{
+				i =-1;
+				startdate = dd;
+				
+				foreach(dr in dt.Rows)
+				{
+					
+	            	if(i == -1)
+	            	{
+		            	nRecId = dr["RecId"].ToString();
+						nDuration = Convert.ToInt32(dr["PlannedDuration"].ToString());
+						if(nDuration&lt;1)
+						{
+							nDuration = 1;
+						}
+		                nPlannedDate =startdate.AddDays(ertelenecekGun);
+						nPlannedEndDate = nPlannedDate.AddDays(nDuration- 1);	
+						query = string.Format("update CR_CustomerTransaction set PlannedDate = \'{0}\',PlannedEndDate =\'{1}\' where RecId = {2}",nPlannedDate.ToString("yyyy-MM-dd HH:mm:ss"),nPlannedEndDate.ToString("yyyy-MM-dd HH:mm:ss"),nRecId);
+						UtilityFunctions.SqlCustomScalarQuery(BaseObject.Connection,BaseObject.Transaction,query);				            				
+						startdate = nPlannedEndDate;
+						
+					}
+					else
+					{
+		            	nRecId = dr["RecId"].ToString();
+						nDuration = Convert.ToInt32(dr["PlannedDuration"].ToString());
+						if(nDuration&lt;1)
+						{
+							nDuration = 1;
+						}						
+						nPlannedDate =startdate.AddDays(1);
+						nPlannedEndDate  =	nPlannedDate.AddDays(nDuration - 1);
+						query = string.Format("update CR_CustomerTransaction set PlannedDate = \'{0}\',PlannedEndDate =\'{1}\' where RecId = {2}",nPlannedDate.ToString("yyyy-MM-dd HH:mm:ss"),nPlannedEndDate.ToString("yyyy-MM-dd HH:mm:ss"),nRecId);
+						UtilityFunctions.SqlCustomScalarQuery(BaseObject.Connection,BaseObject.Transaction,query);				            				
+						startdate = nPlannedEndDate;							 
+					
+					}
+					i++;
+					
+				}
+		  	}
+			
+		}
+		
+	}
+	
+}
+
+</ScriptText>
+</ScriptDefinition>

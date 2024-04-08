@@ -1,0 +1,87 @@
+    using System;
+    //using System.Drawing;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Windows.Forms;
+    using System.Drawing;
+    using System.Data;
+    using FastReport;
+    using FastReport.Data;
+    using FastReport.Dialog;
+    using FastReport.Barcode;
+    using FastReport.Table;
+    using FastReport.Utils;
+    using System.Data.SqlClient;
+    using System.Text;
+   
+
+namespace FastReport
+{
+  
+
+    public class ReportScript
+    {
+      public string RunSqlCommand(string command)
+      {
+        string value = "";
+        try
+        {
+          string constr = ((String)Report.GetParameterValue("ConnectionString"));
+          using (SqlConnection con = new SqlConnection(constr))
+          {
+  
+            using (SqlCommand cmd = new SqlCommand(command, con))
+            {
+          
+              con.Open();
+  
+              var r = cmd.ExecuteScalar();
+  
+  
+              if (con.State == System.Data.ConnectionState.Open) con.Close();
+  
+              if (r != null)
+                value = r.ToString();
+            }
+          }
+        }
+        catch (Exception ex)
+        {
+          throw ex;
+        }
+        return value;
+      }
+               
+      public string renk;
+       
+      private void Text4_BeforePrint(object sender, EventArgs e)
+      {                                
+
+        string aa=((String)Report.GetColumnValue("Kategorili Malzeme Raporu.Stok Kodu"));
+      
+        string query = RunSqlCommand("select UD_Renk from IM_Item where InventoryCode=\'"+aa+"\'");
+        
+      renk  =query;
+        if(query=="Mavi")
+        {
+       //Text1.TextColor = Color.Blue;
+       Text1.FillColor = (Color) (new ColorConverter(). ConvertFromInvariantString ("#0000ff"));          
+          
+        }
+      else if (query=="Turuncu")
+      {
+        Text1.FillColor = (Color) (new ColorConverter(). ConvertFromInvariantString ("#ffa500"));          
+      
+      } 
+      else if (query=="Sarı")
+      {
+        Text1.FillColor = (Color) (new ColorConverter(). ConvertFromInvariantString ("#ffff00"));          
+      
+      } 
+      
+      
+      }  
+    }
+  
+}

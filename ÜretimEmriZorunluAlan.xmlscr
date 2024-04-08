@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="ÜretimEmriZorunluAlan" Enabled="true" Priority="0" ScriptName="ÜretimEmriZorunluAlan">
+  <Events>
+    <Event Enabled="true" ObjectName="InventoryReceiptEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="InventoryReceiptEN" />
+  </Events>
+  <Histories />
+  <ScriptText>function OnBeforePost(sender, ev)
+{
+	if(BaseObject == null 
+	|| BaseObject.Data == null 
+	|| BaseObject.Data.Tables == null 
+	|| BaseObject.CurrentRow.Row.IsNull("AccessCode")
+	|| !BaseObject.Data.Tables.Contains("IM_ReceiptItem"))
+		return null;
+	
+	if(BaseObject.CurrentRow.Row["AccessCode"].ToString()!="FABRIC" &amp;&amp; BaseObject.CurrentRow.Row["AccessCode"].ToString()!="TRIM")
+		return null;
+
+	foreach(dr in BaseObject.Data.Tables["IM_ReceiptItem"].Select(""))
+	{
+	if(dr.IsNull("ManufacturingOrderNo") || dr["ManufacturingOrderNo"].ToString().Trim()  == String.Empty)
+		{
+			BaseObject.ShowMessage("Üretim Fiş Numarası alanı boş olamaz! {scr:ÜretimEmriZorunluAlan}");
+			ev.Cancel = true;
+			return null;
+		}
+	}
+}
+</ScriptText>
+</ScriptDefinition>

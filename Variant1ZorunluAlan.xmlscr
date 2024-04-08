@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="Variant1ZorunluAlan" Enabled="true" Priority="0" ScriptName="Variant1ZorunluAlan">
+  <Events>
+    <Event Enabled="true" ObjectName="TWorkOrderEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="TWorkOrderEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 7.03.2024 09:19:17 Variant1ZorunluAlan
+
+function OnBeforePost(sender,ev)
+{
+	if(BaseObject == null 
+	    || BaseObject.CurrentRow == null
+	    || BaseObject.CurrentRow.Row == null
+		|| BaseObject.CurrentRow.Row.IsNull("WorkOrderType")
+        || Convert.ToInt32(BaseObject.CurrentRow.Row["WorkOrderType"]) != 15 
+		 )
+			return null;
+	
+
+		foreach(ri in BaseObject.Data.Tables["MA_RecipeItem"].Select("ItemType = 1 and ItemType = 4")) 
+	       {
+                if(ri.IsNull("Variant1") || ri["Variant1"].ToString().Trim()=="")
+                    {
+                        sender.ShowMessage("Variant1 Boş Bırakılamaz {..scr:Variant1ZorunluAlan}");
+                        ev.Cancel = true;
+                        return null;
+                    } 
+	       }
+}</ScriptText>
+</ScriptDefinition>

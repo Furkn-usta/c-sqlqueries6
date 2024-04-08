@@ -1,0 +1,138 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="YüklemePlanıBedenMiktarıHesaplama" Enabled="true" Priority="0" ScriptName="YüklemePlanıBedenMiktarıHesaplama">
+  <Events>
+    <Event Enabled="true" ObjectName="PackagingListEN" />
+    <Event Enabled="true" EventName="AfterSucceededPost" FunctionName="OnAfterSucceededPost" ObjectName="PackagingListEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 8.01.2024 15:09:20 YüklemePlanıBedenMiktarıHesaplama
+		s1_ = 0m;
+        s2_ = 0m;
+        s3_ = 0m;
+        s4_ = 0m;
+        s5_ = 0m;
+        s6_ = 0m;
+        s7_ = 0m;
+        s8_ = 0m;
+        s9_ = 0m;
+function OnAfterSucceededPost(sender, ev)
+{ 
+
+	if(BaseObject == null 	
+	|| BaseObject.CurrentRow == null 	
+	|| BaseObject.CurrentRow.Row == null
+    || BaseObject.CurrentRow.Row.IsNull("PackagingType")
+    //|| Convert.ToInt16(BaseObject.CurrentRow.Row["PackagingType"]) != 20
+    )
+		return null;
+        //StyleWeight
+    {
+       
+        foreach(pliv in BaseObject.Data.Tables["IM_PackagingListItemVariant"].Select("PackagingListItemId is not null","SubNo asc"))
+		{
+            foreach(pli in BaseObject.Data.Tables["IM_PackagingListItem"].Select("RecId is not null"))
+		    {
+                if(Convert.ToInt32(pliv["PackagingListItemId"]) == Convert.ToInt32(pli["RecId"]))
+                {
+                    //MessageBox.Show(pliv["RecId"].ToString()+" ~-~ "+pliv["SubNo"].ToString());
+                    
+                    {
+                        
+                          query = "select isnull(PLI.Quantity,0) [qnt],isnull(PLI.SubNo,0) [sub_no] from IM_PackagingListItemVariant PLI with (nolock) where PLI.PackagingListItemId=\'"+pli["RecId"].ToString()+"\'";
+                          dt = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt",query.ToString());
+	                  	      if(dt == null || dt.Rows.Count &lt;= 0)
+	                        	return null; 
+                          for(i=0;i &lt; dt.Rows.Count;i++)
+                          {
+                            
+                          	qnt_ =	Convert.ToDecimal(dt.Rows[i]["qnt"]);
+                          	subno_ =	Convert.ToDecimal(dt.Rows[i]["sub_no"]);
+                          	if(subno_.ToString().Trim() == "1")
+                            {    
+                                if(!BaseObject.CurrentRow.Row.IsNull("UD_Beden1") &amp;&amp; Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden1"]) &gt; 0m)
+                                 {
+                                     global:s1_ = qnt_ / Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden1"]);
+                                 }
+                            }
+                            if(subno_.ToString().Trim() == "2")
+                            {
+                                if(!BaseObject.CurrentRow.Row.IsNull("UD_Beden2") &amp;&amp; Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden2"]) &gt; 0m)
+                                 {
+                                    global:s2_ = qnt_ / Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden2"]);   
+                                 }                                                          
+                            }
+                            if(subno_.ToString().Trim() == "3")
+                            {
+                                if(!BaseObject.CurrentRow.Row.IsNull("UD_Beden3") &amp;&amp; Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden3"]) &gt; 0m)
+                                 {
+                                     global:s3_ = qnt_ / Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden3"]);
+                                 }
+                            }
+                            if(subno_.ToString().Trim() == "4")
+                            {
+                                if(!BaseObject.CurrentRow.Row.IsNull("UD_Beden4") &amp;&amp; Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden4"]) &gt; 0m)
+                                 {
+                                    global:s4_ = qnt_ / Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden4"]);
+                                 }
+                            }
+                            if(subno_.ToString().Trim() == "5")
+                            {
+                                if(!BaseObject.CurrentRow.Row.IsNull("UD_Beden5") &amp;&amp; Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden5"]) &gt; 0m)
+                                 {
+                                    global:s5_ = qnt_ / Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden5"]);
+                                 }
+                            }
+                            if(subno_.ToString().Trim() == "6")
+                            {
+                                if(!BaseObject.CurrentRow.Row.IsNull("UD_Beden6") &amp;&amp; Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden6"]) &gt; 0m)
+                                 {
+                                     global:s6_ = qnt_ / Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden6"]);
+                                 }
+                            }
+                            if(subno_.ToString().Trim() == "7")
+                            {
+                                if(!BaseObject.CurrentRow.Row.IsNull("UD_Beden7") &amp;&amp; Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden7"]) &gt; 0m)
+                                 {
+                                     global:s7_ = qnt_ / Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden7"]);
+                                 }
+                            }
+                            if(subno_.ToString().Trim() == "8")
+                            {
+                                if(!BaseObject.CurrentRow.Row.IsNull("UD_Beden8") &amp;&amp; Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden8"]) &gt; 0m)
+                                 {
+                                    global:s8_ = qnt_ / Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden8"]);
+                                 }
+                            }
+                            if(subno_.ToString().Trim() == "9")
+                            {
+                                if(!BaseObject.CurrentRow.Row.IsNull("UD_Beden9") &amp;&amp; Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden9"]) &gt; 0m)
+                                 {
+                                     global:s9_ = qnt_ / Convert.ToDecimal(BaseObject.CurrentRow.Row["UD_Beden9"]);
+                                 }
+                            }                         
+                          }
+                         
+                          top_ = global:s1_ + global:s2_ + global:s3_ + global:s4_ + global:s5_ + global:s6_ + global:s7_ + global:s8_ + global:s9_;
+                          top_ = top_ / Convert.ToInt32(dt.Rows.Count);
+                          
+                           //MessageBox.Show(top_.ToString());
+                           str = "update IM_PackagingListItem set StyleWeight=\'"+top_.ToString().Replace(",",".")+"\' where RecId =\'"+pli["RecId"].ToString()+"\'";
+                           UtilityFunctions.SqlCustomScalarQuery(BaseObject.Connection,null,str.ToString());
+                            global:s1_ = 0m;
+					        global:s2_ = 0m;
+					        global:s3_ = 0m;
+					        global:s4_ = 0m;
+					        global:s5_ = 0m;
+					        global:s6_ = 0m;
+					        global:s7_ = 0m;
+					        global:s8_ = 0m;
+					        global:s9_ = 0m;
+                          // MessageBox.Show(str.ToString());
+                         
+                    }                    		
+                }                
+            }   
+        }
+    }
+}</ScriptText>
+</ScriptDefinition>

@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="ÜretimEmriRotaAdıTaşıma" Enabled="true" Priority="0" ScriptName="ÜretimEmriRotaAdıTaşıma">
+  <Events>
+    <Event Enabled="true" ObjectName="WorkOrderEN" />
+    <Event Enabled="true" EventName="ColumnChanged" FunctionName="OnColumnChanged" ObjectName="WorkOrderEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 13.11.2023 12:32:08 ÜretimEmriRotaAdıTaşıma
+
+function OnColumnChanged(sender, ev)
+{
+	if( BaseObject == null || BaseObject.CurrentRow == null || BaseObject.CurrentRow.Row == null )
+		return null;
+	
+	if(BaseObject.Name!="WorkOrderEN"  || ev.Row.IsNull("WorkOrderType") || ev.Row.IsNull("RouteId") || (ev.Column.ColumnName != "RouteId"))
+         return null;
+	
+	if(ev.Row["WorkOrderType"].ToString()!="10")
+		return null;
+	
+	if(ev.Column.ColumnName == "RouteId")
+	{
+		MessageBox.Show("test");
+		query = "select isnull(R.RouteName,\'\') [route_name] from MA_Route R with (nolock) where R.CompanyId=2 and R.RecId=\'"+ev.Row["RouteId"]+"\'";
+		dt = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt", query);
+	 	if(dt==null || dt.Rows.Count&lt;0)
+		return null;
+        
+    	route_name_ = dt.Rows[0]["route_name"].ToString();	
+    	ev.SetField&lt;|string|&gt;("UD_Route",route_name_.ToString());
+	}
+}</ScriptText>
+</ScriptDefinition>

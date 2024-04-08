@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="Variant1ZorunluAlan16_1" Enabled="true" Priority="0" ScriptName="Variant1ZorunluAlan16_1">
+  <Events>
+    <Event Enabled="true" ObjectName="InventoryReceiptEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="InventoryReceiptEN" />
+  </Events>
+  <Histories />
+  <ScriptText>
+//Generated on 7.03.2024 09:40:09 Variant1ZorunluAlan16_1
+
+function OnBeforePost(sender,ev)
+{
+	if(BaseObject == null 
+	    || BaseObject.CurrentRow == null
+	    || BaseObject.CurrentRow.Row == null
+		|| BaseObject.CurrentRow.Row.IsNull("ReceiptType")
+        		 )
+	        return null;
+
+        if(Convert.ToInt32(BaseObject.CurrentRow.Row["ReceiptType"]) == 1 || Convert.ToInt32(BaseObject.CurrentRow.Row["ReceiptType"]) == 16 )
+
+		foreach(dr in BaseObject.Data.Tables["IM_ReceiptItem"].Select("InventoryId is not null"))
+		{
+			if(dr.IsNull("ItemVariant1Code") || dr["ItemVariant1Code"].ToString().Trim()=="")
+			{
+			sender.ShowMessage("Variant1 Girilmeden Kayıt Yapılamaz {..scr:Variant1ZorunluAlan16_1} ");
+			ev.Cancel = true;
+			return null;	
+			}
+
+		}
+			
+       
+}</ScriptText>
+</ScriptDefinition>

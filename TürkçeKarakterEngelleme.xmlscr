@@ -1,0 +1,212 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="TürkçeKarakterEngelleme" Enabled="true" Priority="0" ScriptName="TürkçeKarakterEngelleme">
+  <Events>
+    <Event Enabled="true" ObjectName="InventoryEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="InventoryEN" />
+    <Event Enabled="true" ObjectName="VariantColorItemEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnnBeforePost" ObjectName="VariantColorItemEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 10.11.2022 8:52:20
+
+function OnBeforePost(sender, ev)
+{  
+metin=BaseObject.CurrentRow.Row["InventoryName"].ToString().Trim();
+metin2=BaseObject.CurrentRow.Row["ProducerInventoryCode"].ToString().Trim();
+counter=0;
+sayac=0;
+
+seslii="İ";
+sesli_i="ı";
+
+seslig="Ğ";
+sesli_g="ğ";
+
+sesliu="Ü";
+sesli_u="ü";
+
+seslis="Ş";
+sesli_s="ş";
+
+seslio="Ö";
+sesli_o="ö";
+
+seslic="Ç";
+sesli_c="ç";
+
+lock=false;
+
+	if(BaseObject != null &amp;&amp; BaseObject.CurrentRow != null &amp;&amp; BaseObject.CurrentRow.Row != null &amp;&amp; Convert.ToInt32(BaseObject.CurrentRow.Row["InventoryType"]) == 100)
+		{
+	for (counter = 0; counter &lt; metin.Length; counter++)
+			{
+     
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslii)) sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_i) )sayac += 1;
+      
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslig)) sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_g)) sayac += 1;
+      
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesliu)) sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_u)) sayac += 1;
+       
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslis)) sayac += 1;     
+  	  if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_s)) sayac += 1;
+       
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslio) )sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_o)) sayac += 1;
+             
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslic)) sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_c)) sayac += 1;
+        
+			}
+				if(sayac&gt;0) 
+   				lock=true;
+   			if(lock)
+   			{
+   			
+   			sender.ShowMessage("Model Kartında Müşteri Model No veya Adında Türkçe Karakter Kullanılamaz Dikkat..! {scr TürkçeKarakterEngelleme}");
+   			ev.Cancel=true;
+    		return null;  
+   			}  
+   			
+		for (counter = 0; counter &lt; metin2.Length; counter++)
+			{
+     
+      if (Convert.ToChar(metin2.Substring(counter, 1)) == Convert.ToChar(seslii)) sayac += 1;
+      if (Convert.ToChar(metin2.Substring(counter, 1)) == Convert.ToChar(sesli_i) )sayac += 1;
+      
+      if (Convert.ToChar(metin2.Substring(counter, 1)) == Convert.ToChar(seslig)) sayac += 1;
+      if (Convert.ToChar(metin2.Substring(counter, 1)) == Convert.ToChar(sesli_g)) sayac += 1;
+      
+      if (Convert.ToChar(metin2.Substring(counter, 1)) == Convert.ToChar(sesliu)) sayac += 1;
+      if (Convert.ToChar(metin2.Substring(counter, 1)) == Convert.ToChar(sesli_u)) sayac += 1;
+       
+      if (Convert.ToChar(metin2.Substring(counter, 1)) == Convert.ToChar(seslis)) sayac += 1;     
+  	  if (Convert.ToChar(metin2.Substring(counter, 1)) == Convert.ToChar(sesli_s)) sayac += 1;
+       
+      if (Convert.ToChar(metin2.Substring(counter, 1)) == Convert.ToChar(seslio) )sayac += 1;
+      if (Convert.ToChar(metin2.Substring(counter, 1)) == Convert.ToChar(sesli_o)) sayac += 1;
+             
+      if (Convert.ToChar(metin2.Substring(counter, 1)) == Convert.ToChar(seslic)) sayac += 1;
+      if (Convert.ToChar(metin2.Substring(counter, 1)) == Convert.ToChar(sesli_c)) sayac += 1;
+        
+			}		
+			
+ 			if(sayac&gt;0) 
+   				lock=true;
+   			if(lock)
+   			{
+   			
+   			sender.ShowMessage("Model Kartında Müşteri Model No veya Adında Türkçe Karakter Kullanılamaz Dikkat..! {scr TürkçeKarakterEngelleme}");
+   			ev.Cancel=true;
+    		return null;  
+   			}  
+		}
+		
+		if(BaseObject != null &amp;&amp; BaseObject.CurrentRow != null &amp;&amp; BaseObject.CurrentRow.Row != null &amp;&amp; (BaseObject.CurrentRow.Row["AccessCode"].ToString() =="YARN" || BaseObject.CurrentRow.Row["AccessCode"].ToString() =="TRIM")) 
+		{
+
+	for (counter = 0; counter &lt; metin.Length; counter++)
+			{
+     
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslii)) sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_i) )sayac += 1;
+      
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslig)) sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_g)) sayac += 1;
+      
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesliu)) sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_u)) sayac += 1;
+       
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslis)) sayac += 1;     
+  	  if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_s)) sayac += 1;
+       
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslio) )sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_o)) sayac += 1;
+             
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslic)) sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_c)) sayac += 1;
+        
+			}
+			
+			
+ 			if(sayac&gt;0) 
+   				lock=true;
+   			if(lock)
+   			{
+   			
+   			sender.ShowMessage("Adı Kısmında Türkçe Karakter Kullanılamaz Dikkat..! {scr TürkçeKarakterEngelleme}");
+   			ev.Cancel=true;
+    		return null;  
+   			}  
+		}	 
+		
+		}
+
+function OnnBeforePost(sender, ev)
+{  
+metin=BaseObject.CurrentRow.Row["ItemName"].ToString().Trim();
+counter=0;
+sayac=0;
+
+seslii="İ";
+sesli_i="ı";
+
+seslig="Ğ";
+sesli_g="ğ";
+
+sesliu="Ü";
+sesli_u="ü";
+
+seslis="Ş";
+sesli_s="ş";
+
+seslio="Ö";
+sesli_o="ö";
+
+seslic="Ç";
+sesli_c="ç";
+
+
+lock=false;
+
+
+	if(BaseObject != null &amp;&amp; BaseObject.CurrentRow != null &amp;&amp; BaseObject.CurrentRow.Row != null)
+		{
+
+	for (counter = 0; counter &lt; metin.Length; counter++)
+			{
+     
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslii)) sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_i) )sayac += 1;
+      
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslig)) sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_g)) sayac += 1;
+      
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesliu)) sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_u)) sayac += 1;
+       
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslis)) sayac += 1;     
+  	  if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_s)) sayac += 1;
+       
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslio) )sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_o)) sayac += 1;
+             
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(seslic)) sayac += 1;
+      if (Convert.ToChar(metin.Substring(counter, 1)) == Convert.ToChar(sesli_c)) sayac += 1;
+        
+
+			}	
+ 			if(sayac&gt;0) 
+   				lock=true;
+   			if(lock)
+   			{
+			sender.ShowMessage("Renk Kartlarında Kod Oluştururken Türkçe Karakter Kullanılamaz Dikkat..! {scr TürkçeKarakterEngelleme}");
+   			ev.Cancel=true;
+    		return null;  
+   			}  
+		} 
+
+}</ScriptText>
+</ScriptDefinition>

@@ -1,0 +1,129 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Data;
+using FastReport;
+using FastReport.Data;
+using FastReport.Dialog;
+using FastReport.Barcode;
+using FastReport.Table;
+using FastReport.Utils;
+using System.Data.SqlClient;
+using System.Text;
+using System.IO;
+
+namespace FastReport
+{
+  public class ReportScript
+  {
+       public string var_name ;
+       public string var_code;           
+       public string name ;
+       public string exp ;
+    
+    string connection = string.Empty;
+    private void L_StartReport(object sender, EventArgs e)
+    {
+      connection = ((String)Report.GetParameterValue("ConnectionString"));
+    }
+          
+    string bb = string.Empty;
+    private void Data1_BeforePrint(object sender, EventArgs e)
+    {
+      bb = string.Empty;
+      bb= Report.GetColumnValue("IM_OrderReceipt.Kayıt Numarası").ToString();
+      
+      SqlConnection conn = new SqlConnection(connection.ToString());      
+      StringBuilder sb = new StringBuilder();              
+          
+      sb.Clear();           
+      //sb.AppendLine("select top 1 ora.Attachment [Ek] from IM_OrderReceipt orr with(nolock) left join IM_OrderReceiptItem ori with(nolock) on orr.RecId=ori.OrderReceiptId left join IM_OrderReceiptAttachment ora with(nolock) on ora.OrderReceiptId=orr.RecId where orr.RecId=\'"+bb+"\'"+" and ori.ItemOrderNo="+((Int32)Report.GetColumnValue("IM_OrderReceiptItem.Kayıt Sıra No")));
+     sb.AppendLine("select ora.Attachment [Ek]");
+     sb.AppendLine("from IM_OrderReceipt orr with(nolock) ");
+     sb.AppendLine("left join IM_OrderReceiptItem ori with(nolock) on orr.RecId=ori.OrderReceiptId");
+     sb.AppendLine("left join IM_OrderReceiptItemVariant oriv with(nolock) on oriv.OrderReceiptItemId=ori.RecId");
+     sb.AppendLine("left join IM_ItemVariant IV with(nolock) on IV.RecId = oriv.InventoryVariantId");
+     sb.AppendLine("left join IM_VariantItem VI with(nolock) on VI.RecId = IV.Variant1Id");
+     sb.AppendLine("left join IM_OrderReceiptAttachment ora with(nolock) on ora.OrderReceiptId=orr.RecId");
+     sb.AppendLine("where orr.RecId="+bb+" and ori.RecId="+((Int64)Report.GetColumnValue("IM_OrderReceiptItem.Kayıt Numarası"))+" and VI.ItemCode = ora.Explanation");
+      
+                                          
+     MessageBox.Show(sb.ToString());
+      
+      SqlCommand _exp  = new SqlCommand();         
+     
+      
+      _exp.Connection=conn;          
+      
+      _exp.CommandText=sb.ToString();         
+      
+      _exp.CommandType=CommandType.Text;        
+    
+      
+      SqlDataReader rdr;                           
+     
+      
+      conn.Open();
+      rdr = _exp.ExecuteReader();
+     
+      while(rdr.Read())
+      {   
+        byte[] data = ((Byte[])rdr["Ek"]);
+        MemoryStream ms = new MemoryStream(data);
+        Picture2.Image =System.Drawing.Image.FromStream(ms);
+      }
+           
+      conn.Close();     
+     
+      SqlConnection conn2 = new SqlConnection(connection.ToString());             
+      StringBuilder sb2 = new StringBuilder();            
+                   
+      sb2.Clear();
+      //sb.AppendLine("select top 1 ora.Attachment [Ek] from IM_OrderReceipt orr with(nolock) left join IM_OrderReceiptItem ori with(nolock) on orr.RecId=ori.OrderReceiptId left join IM_OrderReceiptAttachment ora with(nolock) on ora.OrderReceiptId=orr.RecId where orr.RecId=\'"+bb+"\'"+" and ori.ItemOrderNo="+((Int32)Report.GetColumnValue("IM_OrderReceiptItem.Kayıt Sıra No")));
+      sb2.AppendLine("select ora.Attachment [Ek]");
+      sb2.AppendLine("from IM_OrderReceipt orr with(nolock) ");
+      sb2.AppendLine("left join IM_OrderReceiptItem ori with(nolock) on orr.RecId=ori.OrderReceiptId");
+      sb2.AppendLine("left join IM_OrderReceiptItemVariant oriv with(nolock) on oriv.OrderReceiptItemId=ori.RecId");
+      sb2.AppendLine("left join IM_ItemVariant IV with(nolock) on IV.RecId = oriv.InventoryVariantId");
+      sb2.AppendLine("left join IM_VariantItem VI with(nolock) on VI.RecId = IV.Variant1Id");
+      sb2.AppendLine("left join IM_OrderReceiptAttachment ora with(nolock) on ora.OrderReceiptId=orr.RecId");
+      sb2.AppendLine("where orr.RecId="+bb+" and ori.RecId="+((Int64)Report.GetColumnValue("IM_OrderReceiptItem.Kayıt Numarası"))+" and VI.ItemCode = ora.Explanation");
+      
+       
+      MessageBox.Show(sb2.ToString());
+    
+      
+      SqlCommand _exp2  = new SqlCommand();         
+     
+      
+      _exp2.Connection=conn2;          
+      
+      _exp2.CommandText=sb2.ToString();         
+      
+      _exp2.CommandType=CommandType.Text;        
+    
+      
+      SqlDataReader rdr2;                           
+     
+      
+      conn2.Open();
+      rdr2 = _exp2.ExecuteReader();
+     
+      while(rdr2.Read())
+      {   
+        byte[] data2 = ((Byte[])rdr2["Ek"]);
+        MemoryStream ms2 = new MemoryStream(data2);
+        Picture3.Image =System.Drawing.Image.FromStream(ms2);
+      }
+     
+    
+      
+      conn2.Close();  
+      
+      
+    }
+  }                    
+}

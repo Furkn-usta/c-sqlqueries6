@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="CariYetki" Enabled="false" Priority="0" ScriptName="UretimEmriCariYetki">
+  <Events>
+    <Event Enabled="true" ObjectName="WorkOrderEN" />
+    <Event Enabled="true" EventName="ColumnChanged" FunctionName="OnColumnChanged" ObjectName="WorkOrderEN" />
+  </Events>
+  <Histories />
+  <ScriptText>function OnColumnChanged(sender,ea)
+{
+		
+	if (BaseObject != null 
+	&amp;&amp; BaseObject.CurrentRow != null 
+	&amp;&amp; BaseObject.CurrentRow.Row != null 
+	&amp;&amp; !BaseObject.IsNewRecord
+	&amp;&amp; (BaseObject.ActiveSession.User.RecId.ToString() != "210" || BaseObject.ActiveSession.User.RecId.ToString() != "2")
+	&amp;&amp; !BaseObject.CurrentRow.Row.IsNull("WorkOrderType") 
+	&amp;&amp; BaseObject.CurrentRow.Row["WorkOrderType"].ToString() == "10" )
+	{
+	
+		if(ea.Row.Table.TableName=="MA_WorkOrder" &amp;&amp; ea.Column.ColumnName == "CurrentAccountCode" &amp;&amp; BaseObject.Data.Tables["MA_WorkOrderItem"].Rows.Count&gt;0 )		
+		{	
+			
+			ea.Row.SetColumnError(ea.Column.ColumnName, "Kaydedilmiş Üretim emri cari kodu değiştiremezsiniz!{scr:CariKoduYetki}");
+			BaseObject.ErrorMessage ="Kaydedilmiş Üretim emri cari kodu değiştiremezsiniz.{scr:CariKoduYetki}";
+			BaseObject.ShowMessage(BaseObject.ErrorMessage, "Dikkat");
+			return null;			
+		}
+		
+	}	
+}</ScriptText>
+</ScriptDefinition>

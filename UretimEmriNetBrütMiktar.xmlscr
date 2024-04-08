@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="UretimEmriNetBrütMiktar" Enabled="false" Priority="0" ScriptName="UretimEmriNetBrütMiktar">
+  <Events>
+    <Event Enabled="true" ObjectName="InventoryReceiptEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="InventoryReceiptEN" />
+  </Events>
+  <Histories />
+  <ScriptText>function OnBeforePost (sender,eventArg)
+{
+	if (BaseObject!=null &amp;&amp; BaseObject.CurrentRow != null &amp;&amp; BaseObject.CurrentRow.Row != null &amp;&amp; (Convert.ToInt32(BaseObject.CurrentRow.Row["ReceiptType"])==120 || Convert.ToInt32(BaseObject.CurrentRow.Row["ReceiptType"])==125 ) )
+		{
+		foreach(dr in BaseObject.Data.Tables["IM_ReceiptItem"].Select("WorkOrderReceiptItemId is not null"))
+				{
+					miktar=(decimal)0;
+					sqlStr="select WOI.Quantity Miktar from MA_WorkOrderItem WOI with (nolock)";
+					sqlStr+=" left join IM_ReceiptItem RI with (nolock) on WOI.RecId="+dr["WorkOrderReceiptItemId"].ToString();
+					sqlStr+=" where WOI.WorkOrderSubType=1 and RI.ReceiptType in (120,125)";
+					
+					dt = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt", sqlStr);
+					if(dt!=null &amp;&amp; dt.Rows.Count&gt;0 &amp;&amp; !dt.Rows[0].IsNull("Miktar") &amp;&amp; Convert.ToDecimal(dt.Rows[0]["Miktar"])!=0)
+					{
+						miktar=Convert.ToDecimal(dt.Rows[0]["Miktar"]);
+							if(dr["GrossQuantity"]!=miktar)
+							{
+							BaseObject.ShowMessage("Brüt miktar üretim emrinden büyük ya da küçük olamaz,SCUretimEmriNetBrutMiktar");
+                     		eventArg.Cancel=true;
+		              		return null;
+							}
+					}
+				}
+		}
+}</ScriptText>
+</ScriptDefinition>

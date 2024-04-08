@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="UretimCikisAksesarFiyatTasima" Enabled="true" Priority="0" ScriptName="UretimCikisAksesarFiyatTasima">
+  <Events>
+    <Event Enabled="true" ObjectName="InventoryReceiptEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="InventoryReceiptEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 26.01.2024 19:31:16 UretimCikisAksesarFiyatTasima
+
+function OnBeforePost(sender,ev)
+{
+	if(BaseObject == null 
+	    || BaseObject.CurrentRow == null
+	    || BaseObject.CurrentRow.Row == null
+		|| BaseObject.CurrentRow.Row.IsNull("ReceiptType")
+		|| !BaseObject.IsNewRecord
+		|| Convert.ToInt32(BaseObject.CurrentRow.Row["ReceiptType"]) != 140	 )
+			return null;
+        
+         foreach(ia in BaseObject.Data.Tables["IM_ItemAllocation"].Select("InventoryReceiptItemId is not null and WorkOrderItemId is not null")) 
+                {
+                foreach(ri in BaseObject.Data.Tables["IM_ReceiptItem"].Select("RecId is not null and InventoryId is not null")) 
+                        {
+                            if(Convert.ToInt32(ri["RecId"]) == Convert.ToInt32(ia["InventoryReceiptItemId"]))
+                            {
+                                sb = new StringBuilder();
+                                sb.Clear();
+                                sb.AppendLine("select top 1 case when isnull(RI.ForexId,0)!=0  then isnull(RI.ForexUnitPrice,0) when isnull(RI.ForexId,0)=0  then isnull(RI.UnitPrice,0) end [fiyat]  ");
+                                sb.AppendLine(",case when isnull(RI.ForexId,0)!=0  then 1 when isnull(RI.ForexId,0)=0  then 0 end [doviz_tipi]");
+                                sb.AppendLine("from IM_ItemAllocation IA with (nolock)");
+                                sb.AppendLine("left join IM_ReceiptItem RI with (nolock) on RI.RecId=IA.InventoryReceiptItemId");
+                                sb.AppendLine("left join IM_Item I with (nolock) on I.RecId=RI.InventoryId");
+                                sb.AppendLine("left join IM_Receipt R with (nolock) on R.RecId=RI.InventoryReceiptId");
+                                sb.AppendLine("where isnull(IA.WorkOrderItemId,0)="+Convert.ToInt32(ia["WorkOrderItemId"])+" and isnull(RI.InventoryId,0)="+Convert.ToInt32(ri["InventoryId"])+"");
+                                sb.AppendLine("and IA.InventoryReceiptType in (1,16) and isnull(I.AccessCode,\'\')=\'TRIM\' ");
+                                sb.AppendLine("order by R.ReceiptDate desc");
+                               // MessageBox.Show(sb.ToString());
+                                dt=UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt",sb.ToString());
+                                if(dt == null || dt.Rows.Count &lt;= 0)
+                                        return null; 
+                                
+                                doviz_tipi_ =  dt.Rows[0]["doviz_tipi"].ToString();
+                                fiyat_ = Convert.ToDecimal(dt.Rows[0]["fiyat"]);
+                                if(doviz_tipi_.ToString() == "0")
+                                	ri.SetField&lt;|decimal|&gt;("UnitPrice",Convert.ToDecimal(fiyat_));
+                                if(doviz_tipi_.ToString() == "1")
+                                	ri.SetField&lt;|decimal|&gt;("ForexUnitPrice",Convert.ToDecimal(fiyat_));
+                            }
+                        }
+                }
+		
+}
+</ScriptText>
+</ScriptDefinition>

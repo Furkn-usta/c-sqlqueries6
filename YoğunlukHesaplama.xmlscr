@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="YogunlukHesaplama" Enabled="true" Priority="0" ScriptName="YogunlukHesaplama">
+  <Events>
+    <Event Enabled="true" ObjectName="InventoryEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="InventoryEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 30.01.2023 14:26:52
+function OnBeforePost(sender, ev)
+{
+	if(BaseObject == null || BaseObject.CurrentRow == null || BaseObject.CurrentRow.Row == null  || BaseObject.CurrentRow.Row.IsNull("InventoryType") )
+		return null;
+
+			a=0m;
+			b=0m;
+			c=0m;
+			d=1;
+
+			query="Select iuis.UnitWidth,iuis.UnitLength,iuis.UnitHeight from IM_ItemUnitItemSize iuis  where iuis.UnitWeight is not null or iuis.UnitLength is not null or  iuis.UnitHeight is not null and iuis.InventoryId="+ BaseObject.CurrentRow.Row["RecId"].ToString();
+			dt=UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt",query); 
+			if(dt!=null)
+			{
+				a=Convert.ToDecimal(dt.Rows[0][0]);
+				b=Convert.ToDecimal(dt.Rows[0][1]);
+				c=Convert.ToDecimal(dt.Rows[0][2]);
+				d=(a*b*c)/3000;
+			BaseObject.CurrentRow.Row.SetField&lt;|String|&gt;("Density",d.ToString());
+			BaseObject.CurrentRow.Row.SetField&lt;|String|&gt;("UD_Desi",d.ToString());
+			}	
+    
+}</ScriptText>
+</ScriptDefinition>

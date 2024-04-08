@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="YuklemeGrubuUretimeCikisKontrol" Enabled="true" Priority="0" ScriptName="YuklemeGrubuUretimeCikisKontrol">
+  <Events>
+    <Event Enabled="true" ObjectName="InventoryReceiptEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="InventoryReceiptEN" />
+  </Events>
+  <Histories>
+    <History EditedBy="FurkanUsta" EntryDate="2023-04-03T00:00:00">
+      <Change>Tedarik gruplarına ve malzeme malzeme kontrol ederek üretime çıkış yapılırken bir önceki tedarik grubu üretime çıkış yapılmamış ise kayıt yapılmasını engeller.</Change>
+    </History>
+  </Histories>
+  <ScriptText>//Generated on 3.04.2023 13:22:07
+/*
+Tedarik gruplarına ve malzeme malzeme kontrol ederek üretime çıkış yapılırken bir önceki tedarik grubu üretime çıkış yapılmamış ise kayıt yapılmasını engeller.
+*/
+allocation_requirement_group = "1.Yükleme";
+function OnBeforePost(sender,ev)
+{		
+er_kod="";
+	if (BaseObject != null 
+	&amp;&amp; BaseObject.CurrentRow != null 
+	&amp;&amp; BaseObject.CurrentRow.Row != null 
+	&amp;&amp; !BaseObject.CurrentRow.Row.IsNull("ReceiptType")
+	&amp;&amp; Convert.ToInt16(BaseObject.CurrentRow.Row["ReceiptType"]) == 140)
+	{
+	
+	if(BaseObject.CurrentRow.Row["AccessCode"].ToString()=="FABRIC")
+	er_kod="1";
+	
+	foreach(dr in BaseObject.Data.Tables["IM_ItemAllocation"].Select("InventoryId is not null and ItemVariant1Code is not null and WorkOrderItemId is not null"))
+		{
+		if(er_kod.ToString()=="1")
+				{
+					varyant_id = " select IV.RecId [rec] from IM_ItemVariant IV with (nolock)";
+					varyant_id += " where IV.InventoryId="+Convert.ToInt32(dr["InventoryId"])+" and IV.Variant1Id =";
+					varyant_id += "(select VI.RecId  from IM_VariantItem VI with (nolock) where VI.ItemCode = \'"+dr["ItemVariant1Code"].ToString()+"\')"; 
+					dt_varyant = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt_varyant",varyant_id );
+					 	if(dt_varyant==null || dt_varyant.Rows.Count&lt;=0)
+							return null;
+            		
+				global:allocation_requirement_group = dr["RequirementGroup"].ToString();
+					
+					query = " select isnull(WOI.RequirementGroup,\'\') [rq] from MA_WorkOrder WO with (nolock)  ";
+					query += "  left join MA_WorkOrderItem WOI with (nolock)   on WOI.WorkOrderId=WO.RecId  ";
+					query += "  where WOI.OperationCode=\'"+dr["ItemVariant1Code"].ToString()+"\' and WOI.RequirementGroup is not null and WO.RecId in (select WOI.WorkOrderId  from MA_WorkOrder WO with (nolock)";
+					query += "  left join MA_WorkOrderItem WOI with (nolock)   on WOI.WorkOrderId=WO.RecId";
+					query += "  where WOI.RecId=\'"+dr["WorkOrderItemId"].ToString()+"\')  group by WOI.RequirementGroup";
+            		dt = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt",query );
+				 	// MessageBox.Show(query.ToString());
+				 	
+				 	
+				 	if(dt == null || dt.Rows.Count&lt;0)
+						return null;
+						for(l_rows=0; l_rows &lt; dt.Rows.Count; l_rows++)
+                            {
+                           if(dt.Rows[l_rows]["rq"].ToString() == global:allocation_requirement_group.ToString()){
+                                query2_ = " select count(isnull(IA.RecId,0)) [uc]  ";
+                                query2_ += " from IM_ItemAllocation IA with (nolock) ";
+                                query2_ += " left join IM_ItemVariant IV with (nolock) on (IV.RecId = IA.InventoryVariantId) ";
+                                query2_ += " left join IM_VariantItem VI with (nolock) on (VI.RecId = IV.Variant1Id) ";
+                                query2_ += " left join IM_VariantItem VI2 with (nolock) on (VI2.RecId = IV.Variant2Id) ";
+                                query2_ += " where IA.RequirementGroup=\'"+dt.Rows[l_rows]["rq"].ToString()+"\' ";
+                                query2_ += " and IA.InventoryId=\'"+dr["InventoryId"].ToString()+"\' ";
+                                query2_ += " and IA.WorkOrderItemId=\'"+dr["WorkOrderItemId"].ToString()+"\' ";
+                                query2_ += " and IA.InventoryVariantId=\'"+dt_varyant.Rows[0]["rec"].ToString()+"\' ";
+                                query2_ += " and IA.InventoryReceiptType = 140 ";
+                               // MessageBox.Show(query2_.ToString());
+                                dt2 = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt2",query2_);
+				 			 		
+				 				if(dt2 == null || dt2.Rows.Count&lt;0)
+									return null;
+								
+									if(Convert.ToInt32(dt2.Rows[0]["uc"]) == 0 ) 
+									{
+										query2_2 = " select count(isnull(IA.RecId,0)) [uc]  ";
+		                                query2_2 += " from IM_ItemAllocation IA with (nolock) ";
+		                                query2_2 += " left join IM_ItemVariant IV with (nolock) on (IV.RecId = IA.InventoryVariantId) ";
+		                                query2_2 += " left join IM_VariantItem VI with (nolock) on (VI.RecId = IV.Variant1Id) ";
+		                                query2_2 += " left join IM_VariantItem VI2 with (nolock) on (VI2.RecId = IV.Variant2Id) ";
+		                                query2_2 += " where IA.RequirementGroup=\'"+dt.Rows[l_rows - 1]["rq"].ToString()+"\' ";
+		                                query2_2 += " and IA.InventoryId=\'"+dr["InventoryId"].ToString()+"\' ";
+		                                query2_2 += " and IA.WorkOrderItemId=\'"+dr["WorkOrderItemId"].ToString()+"\' ";
+		                                query2_2 += " and IA.InventoryVariantId=\'"+dt_varyant.Rows[0]["rec"].ToString()+"\' ";
+		                                query2_2 += " and IA.InventoryReceiptType = 140 ";
+		                              //  MessageBox.Show(query2_2.ToString());
+		                                dt2_2 = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt2_2",query2_2);
+							 			 	if(dt2_2 == null || dt2_2.Rows.Count&lt;0)
+												return null;
+										
+											if(Convert.ToInt32(dt2.Rows[0]["uc"]) == 0 &amp;&amp; Convert.ToInt32(dt2_2.Rows[0]["uc"]) == 0)
+											{
+												 sender.ShowMessage("Bir Önceki Yükleme Çıkışı Yapılmadan Bu Yükleme Grubunun Çıkışı Yapılamaz.. {scr:YuklemeGrubuUretimeCikisKontrol}");
+					                               ev.Cancel=true;
+					                               return null;
+											}
+                                            
+									}
+								}
+                            }
+            	}
+			}
+		}
+}
+
+
+
+</ScriptText>
+</ScriptDefinition>

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="ÜretimEmriLotSeriUpdate" Enabled="true" Priority="0" ScriptName="ÜretimEmriLotSeriUpdate">
+  <Events>
+    <Event Enabled="true" ObjectName="InventorySerialEN" />
+    <Event Enabled="true" EventName="AfterSucceededPost" FunctionName="OnAfterSucceededPost" ObjectName="InventorySerialEN" />
+  </Events>
+  <Histories />
+  <ScriptText>function OnAfterSucceededPost (sender, ev)
+{
+	if(BaseObject == null || BaseObject.CurrentRow == null || BaseObject.CurrentRow.Row == null || BaseObject.CurrentRow.Row.IsNull("InventoryId"))
+		return null;
+	
+		if(!BaseObject.CurrentRow.Row.IsNull("WorkOrderReceiptItemId") &amp;&amp; !BaseObject.CurrentRow.Row.IsNull("WorkOrderItemOrderNo"))
+		{
+			sql = "update IM_SerialCard set UpdatedAt= GETDATE(),PartyNo = ";
+			sql += " (select isnull(WO.SpecialCode,\'\') from MA_WorkOrder WO with (nolock)";
+			sql += " left join MA_WorkOrderItem WOI with (nolock) on WOI.WorkOrderId=WO.RecId ";
+			sql += " where WOI.RecId="+Convert.ToInt32(BaseObject.CurrentRow.Row["WorkOrderReceiptItemId"])+") where ";
+			sql += " InventoryId="+Convert.ToInt32(BaseObject.CurrentRow.Row["InventoryId"])+" and CompanyId="+BaseObject.ActiveSession.User.RecId;
+			sql += " and WorkOrderItemOrderNo="+Convert.ToInt32(BaseObject.CurrentRow.Row["WorkOrderItemOrderNo"]);
+		//	MessageBox.Show(sql.ToString());
+			UtilityFunctions.SqlCustomScalarQuery(BaseObject.Connection, null, sql);
+		}
+		
+}
+</ScriptText>
+</ScriptDefinition>

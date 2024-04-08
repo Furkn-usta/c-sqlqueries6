@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="ZorunluAlanScriptİrsaliyeveMüşteriSipariş" Enabled="true" Priority="0" ScriptName="ZorunluAlanScriptİrsaliyeveMüşteriSipariş">
+  <Events>
+    <Event Enabled="true" ObjectName="OrderReceiptEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="OrderReceiptEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnIBeforePost" ObjectName="InventoryReceiptEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 29.01.2024 15:14:24 ZorunluAlanScriptİrsaliyeveMüşteriSipariş
+
+function OnBeforePost(sender, ev)
+{
+	if(BaseObject == null 
+	|| BaseObject.CurrentRow == null 
+	|| BaseObject.CurrentRow.Row == null
+	|| BaseObject.CurrentRow.Row.IsNull("ReceiptType")
+	)
+		return null;
+
+	if(Convert.ToInt32(BaseObject.CurrentRow.Row["ReceiptType"]) != 2)
+		return null;
+		
+    foreach(ia in BaseObject.Data.Tables["IM_ItemAllocation"].Select("OrderReceiptItemId is not null"))    
+    {
+         if(ia.IsNull("InventoryVariantId") || Convert.ToInt32(ia["InventoryVariantId"])  == 0)
+                    {
+                        BaseObject.ShowMessage("Varyant Boş Olamaz {scr:ZorunluAlanScript}");
+                        ev.Cancel = true;
+                        return null;
+                    }
+        foreach(dr in BaseObject.Data.Tables["IM_OrderReceiptItem"].Select("RecId is not null"))
+        {
+            if(Convert.ToInt32(ia["OrderReceiptItemId"]) == Convert.ToInt32(dr["RecId"]))
+                {
+                    if(dr.IsNull("PartyNo") || dr["PartyNo"].ToString().Trim()=="")
+                    {
+                        sender.ShowMessage("Parti Lot No Eksik Tanımlanamaz.. scr:ZorunluAlanScript}");
+                        ev.Cancel = true;
+                        return null;
+                    }
+
+                    if(dr.IsNull("CustomerOrderNo") || dr["CustomerOrderNo"].ToString().Trim()=="")
+                    {
+                        sender.ShowMessage("Müşteri Sipariş No Eksik Tanımlanamaz.. scr:ZorunluAlanScript}");
+                        ev.Cancel = true;
+                        return null;
+                    }
+                    if(dr.IsNull("Explanation") || dr["Explanation"].ToString().Trim()=="")
+                    {
+                        sender.ShowMessage("Açıklama Eksik Tanımlanamaz.. scr:ZorunluAlanScript}");
+                        ev.Cancel = true;
+                        return null;
+                    }
+                    if(dr.IsNull("UnitPrice") || Convert.ToDecimal(dr["UnitPrice"])  == 0m)
+                    {
+                        BaseObject.ShowMessage("Fiyat alanı boş olamaz! {scr:ZorunluAlanScript}");
+                        ev.Cancel = true;
+                        return null;
+                    }
+                }
+        }
+    }
+}
+
+function OnIBeforePost(sender, ev)
+{
+	if(BaseObject == null 
+	|| BaseObject.CurrentRow == null 
+	|| BaseObject.CurrentRow.Row == null
+	|| BaseObject.CurrentRow.Row.IsNull("ReceiptType")
+	)
+		return null;
+
+	
+	if(Convert.ToInt32(BaseObject.CurrentRow.Row["ReceiptType"]) == 1 || Convert.ToInt32(BaseObject.CurrentRow.Row["ReceiptType"]) == 120 )	
+    {
+            foreach(ia in BaseObject.Data.Tables["IM_ItemAllocation"].Select("InventoryReceiptItemId is not null"))    
+            {
+                if(ia.IsNull("InventoryVariantId") || Convert.ToInt32(ia["InventoryVariantId"])  == 0)
+                            {
+                                BaseObject.ShowMessage("Varyant Boş Olamaz {scr:ZorunluAlanScript}");
+                                ev.Cancel = true;
+                                return null;
+                            }
+                foreach(dr in BaseObject.Data.Tables["IM_ReceiptItem"].Select("RecId is not null"))
+                {
+                    if(Convert.ToInt32(ia["InventoryReceiptItemId"]) == Convert.ToInt32(dr["RecId"]))
+                        {
+                            if(dr.IsNull("PartyNo") || dr["PartyNo"].ToString().Trim()=="")
+                            {
+                                sender.ShowMessage("Parti Lot No Eksik Tanımlanamaz.. scr:ZorunluAlanScript}");
+                                ev.Cancel = true;
+                                return null;
+                            }
+
+                            if(dr.IsNull("CustomerOrderNo") || dr["CustomerOrderNo"].ToString().Trim()=="")
+                            {
+                                sender.ShowMessage("Müşteri Sipariş No Eksik Tanımlanamaz.. scr:ZorunluAlanScript}");
+                                ev.Cancel = true;
+                                return null;
+                            }
+                            if(dr.IsNull("Explanation") || dr["Explanation"].ToString().Trim()=="")
+                            {
+                                sender.ShowMessage("Açıklama Eksik Tanımlanamaz.. scr:ZorunluAlanScript}");
+                                ev.Cancel = true;
+                                return null;
+                            }
+                            if(dr.IsNull("UnitPrice") || Convert.ToDecimal(dr["UnitPrice"])  == 0m)
+                            {
+                                BaseObject.ShowMessage("Fiyat alanı boş olamaz! {scr:ZorunluAlanScript}");
+                                ev.Cancel = true;
+                                return null;
+                            }
+                        }
+                }
+            }
+        }
+}</ScriptText>
+</ScriptDefinition>

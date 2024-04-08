@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="YuklemePlaniZorunluAlan" Enabled="false" Priority="0" ScriptName="YuklemePlaniZorunluAlan">
+  <Events>
+    <Event Enabled="true" ObjectName="PackagingListEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="PackagingListEN" />
+  </Events>
+  <Histories />
+  <ScriptText>
+//Generated on 7.03.2024 11:56:12 YuklemePlaniZorunluAlan
+
+//glFields = array["UD_Aski","Askılı Ürün Boyu (CM)","UD_Level","Level","UD_StangaAdeti","Ştanga Adeti","UD_Stanga","Bir Ştangaya Sığan Adet"];
+ 
+ glFields = new List&lt;|string|&gt;();
+ glFields.Add("UD_Aski");
+ glFields.Add("Askılı Ürün Boyu (CM)");
+ glFields.Add("UD_Level");
+ glFields.Add("Level");
+ glFields.Add("UD_StangaAdeti");
+ glFields.Add("Ştanga Adeti");
+ glFields.Add("UD_Stanga");
+ glFields.Add("Bir Ştangaya Sığan Adet");
+function OnBeforePost(sender, ev)
+{
+	if(BaseObject == null 
+	|| BaseObject.Data == null 
+	|| BaseObject.Data.Tables == null
+	|| BaseObject.CurrentRow == null 
+	|| BaseObject.CurrentRow.Row == null 
+	|| BaseObject.CurrentRow.Row.IsNull("PackagingType")
+	|| Convert.ToInt32(BaseObject.CurrentRow.Row["PackagingType"]) != 20)
+		return null;
+		//	MessageBox.Show(glFields.Count.ToString());
+		foreach(pli in BaseObject.Data.Tables["IM_PackagingListItem"].Select("UD_YuklemeSekli is not null")) 
+			       yuk_sek_ = pli["UD_YuklemeSekli"].ToString();
+			       if(yuk_sek_ == "Askılı")
+			       {			      
+						for(i = 0; i &lt; glFields.Count; i+=2)
+						{
+							if(pli.IsNull(glFields[i]) || Convert.ToDecimal(pli[glFields[i]]) &lt;=0)
+							{
+								BaseObject.ShowMessage(glFields[i+1] + " alanı zorunludur. {scr:YuklemePlaniZorunluAlan}");
+								ev.Cancel = true;
+								return null;
+							}
+						}
+				   }
+}
+
+ 
+ 
+ 
+ </ScriptText>
+</ScriptDefinition>

@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="WebKoduAlanAktarımı" Enabled="true" Priority="0" ScriptName="WebKoduAlanAktarımı">
+  <Events>
+    <Event Enabled="true" ObjectName="InventoryReceiptEN" />
+    <Event Enabled="true" EventName="ColumnChanged" FunctionName="OnColumnChanged" ObjectName="InventoryReceiptEN" />
+  </Events>
+  <Histories>
+    <History EditedBy="SK" EntryDate="2023-04-18T00:00:00">
+      <Change>WebKoduAlanAktarımı malzemenin içerisindeki özel alanı sayım fişindeki alana aktarır.</Change>
+    </History>
+  </Histories>
+  <ScriptText>//Generated on 18.04.2023 15:00:37
+/*
+WebKoduAlanAktarımı malzemenin içerisindeki özel alanı sayım fişindeki alana aktarır.
+*/
+function OnColumnChanged(sender, ev)		
+{
+if(BaseObject == null 
+|| BaseObject.CurrentRow == null 
+|| BaseObject.CurrentRow.Row == null 
+|| !BaseObject.Data.Tables.Contains("IM_ReceiptItem") 
+|| BaseObject.CurrentRow.Row.IsNull("ReceiptType") 
+|| Convert.ToInt32(BaseObject.CurrentRow.Row["ReceiptType"]) != 16
+ || ev.Row.Table.TableName != "IM_ReceiptItem")
+  return null; 
+
+
+  if(ev.Row.IsNull("InventoryId") 
+ 
+  || (ev.Column.ColumnName != "InventoryId" ))
+     return null;
+  //MessageBox.Show(ev.Row["InventoryId"].ToString());
+ query ="select isnull(I.UD_WebKodu,\'\') [wc] from IM_Item I with (nolock) where I.RecId=\'"+ev.Row["InventoryId"].ToString()+"\'";
+ dt = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt", query);
+	 	
+	    if(dt!=null &amp;&amp; dt.Rows.Count&gt;=0 )
+			{
+			wc_ = dt.Rows[0]["wc"].ToString();
+			ev.Row.SetField&lt;|string|&gt;("UD_WebKodu",wc_);
+			}
+       
+}</ScriptText>
+</ScriptDefinition>

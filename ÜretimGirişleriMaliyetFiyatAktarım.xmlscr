@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="ÜretimGirişleriMaliyetFiyatAktarım" Enabled="true" Priority="0" ScriptName="ÜretimGirişleriMaliyetFiyatAktarım">
+  <Events>
+    <Event Enabled="true" ObjectName="TWorkOrderProductionEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="TWorkOrderProductionEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 19.01.2024 12:32:11 ÜretimGirişleriMaliyetFiyatAktarım
+
+function OnBeforePost(sender, ev)
+{
+	if(BaseObject == null 
+	|| BaseObject.CurrentRow == null 
+	|| BaseObject.CurrentRow.Row == null
+    || BaseObject.CurrentRow.Row.IsNull("CurrentAccountId")
+    || BaseObject.CurrentRow.Row.IsNull("WorkOrderItemId"))
+		return null;
+	
+		 atolye_rec = BaseObject.CurrentRow.Row["CurrentAccountId"].ToString();
+		 sb = new StringBuilder();	
+		 sb.Clear();
+         sb.AppendLine("select isnull(ICI.UnitPrice,0) [fiyat] from MA_InitialCost IC with (nolock) ");
+         sb.AppendLine("left join MA_InitialCostItem ICI with (nolock) on ICI.InitialCostId=IC.RecId ");
+         sb.AppendLine("where ICI.InitialCostCardId=32 --grup kartının Idsi ");
+		 sb.AppendLine(" and isnull(IC.WorkOrderId,0)= (select isnull(WO.RecId,0) [order_rec] from MA_WorkOrder WO with (nolock)  ");
+		 sb.AppendLine(" left join MA_WorkOrderItem WOI with (nolock) on WOI.WorkOrderId=WO.RecId ");
+	     sb.AppendLine(" where WOI.WorkOrderSubType=1 and isnull(WOI.RecId,0)=\'"+BaseObject.CurrentRow.Row["WorkOrderItemId"].ToString()+"\')");
+         sb.AppendLine("and isnull(ICI.CurrentAccountId,0)=\'"+atolye_rec.ToString()+"\' ");
+		 dt_sb = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt_sb",sb.ToString());
+	     if(dt_sb == null || dt_sb.Rows.Count &lt;= 0)
+         	return null;
+         fiyat_ = dt_sb.Rows[0]["fiyat"].ToString();
+ 		 BaseObject.CurrentRow.Row.SetField&lt;|decimal|&gt;("UnitPrice",Convert.ToDecimal(fiyat_));
+ 		    
+}</ScriptText>
+</ScriptDefinition>

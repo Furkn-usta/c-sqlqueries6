@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="YakaMiktarTasima" Enabled="true" Priority="0" ScriptName="YakaMiktarTasima">
+  <Events>
+    <Event Enabled="true" ObjectName="OrderReceiptEN" />
+    <Event Enabled="true" EventName="ColumnChanged" FunctionName="OnColumnChanged" ObjectName="OrderReceiptEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 10.11.2022 11:14:58
+
+function OnColumnChanged(sender,ev)
+{
+   if( BaseObject == null || BaseObject.CurrentRow == null || BaseObject.CurrentRow.Row == null )
+		return null;
+   if(BaseObject.Name!="OrderReceiptEN" || ev.Row.Table.TableName != "IM_OrderReceiptItem" || ev.Row.IsNull("ReceiptType") || ev.Row["ReceiptType"].ToString() != "2")
+      return null;
+
+   yaka_1=0m;
+   if(!ev.Row.IsNull("UD_YakaMiktar_1") &amp;&amp; Convert.ToDecimal(ev.Row["UD_YakaMiktar_1"])&gt;0m)
+		 yaka_1=Convert.ToDecimal(ev.Row["UD_YakaMiktar_1"]);
+
+       yaka_2=0m;
+   if(!ev.Row.IsNull("UD_YakaMiktar_2") &amp;&amp; Convert.ToDecimal(ev.Row["UD_YakaMiktar_2"])&gt;0m)
+		 yaka_2=Convert.ToDecimal(ev.Row["UD_YakaMiktar_2"]);
+
+       yaka_3=0m;
+   if(!ev.Row.IsNull("UD_YakaMiktar_3") &amp;&amp; Convert.ToDecimal(ev.Row["UD_YakaMiktar_3"])&gt;0m)
+		 yaka_3=Convert.ToDecimal(ev.Row["UD_YakaMiktar_3"]);
+		 
+	 yaka_4=0m;
+   if(!ev.Row.IsNull("UD_YakaMiktar_4") &amp;&amp; Convert.ToDecimal(ev.Row["UD_YakaMiktar_4"])&gt;0m)
+		 yaka_4=Convert.ToDecimal(ev.Row["UD_YakaMiktar_4"]);
+		 
+	 yaka_5=0m;
+   if(!ev.Row.IsNull("UD_YakaMiktar_5") &amp;&amp; Convert.ToDecimal(ev.Row["UD_YakaMiktar_5"])&gt;0m)
+		 yaka_5=Convert.ToDecimal(ev.Row["UD_YakaMiktar_5"]);
+		 
+	yaka_6=0m;
+	 if(!ev.Row.IsNull("UD_YakaMiktar_6") &amp;&amp; Convert.ToDecimal(ev.Row["UD_YakaMiktar_6"])&gt;0m)
+		 yaka_6=Convert.ToDecimal(ev.Row["UD_YakaMiktar_6"]);		 
+
+      	if(ev.Column.ColumnName == "UD_YakaMiktar_1" || ev.Column.ColumnName == "UD_YakaMiktar_2"|| ev.Column.ColumnName == "UD_YakaMiktar_3"|| ev.Column.ColumnName == "UD_YakaMiktar_4"|| ev.Column.ColumnName == "UD_YakaMiktar_5"|| ev.Column.ColumnName == "UD_YakaMiktar_6")
+	{
+	    
+       toplam=Convert.ToDecimal(yaka_1)+Convert.ToDecimal(yaka_2)+Convert.ToDecimal(yaka_3)+Convert.ToDecimal(yaka_4)+Convert.ToDecimal(yaka_5)+Convert.ToDecimal(yaka_6);
+	    ev.Row.SetField&lt;|decimal|&gt;("Quantity", Convert.ToDecimal(toplam)); 
+    }
+}</ScriptText>
+</ScriptDefinition>

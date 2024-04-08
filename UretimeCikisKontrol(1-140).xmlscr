@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="UretimeCikisGelenKontrol" Enabled="true" Priority="0" ScriptName="UretimeCikisGelenKontrol">
+  <Events>
+    <Event Enabled="true" ObjectName="InventoryReceiptEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="InventoryReceiptEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 14.09.2022 17:15:35
+
+function OnBeforePost(sender, ev)
+{
+	foreach(ri in BaseObject.Data.Tables["IM_ReceiptItem"].Select("RecId is not null"))
+	{
+	    foreach( ia in BaseObject.Data.Tables["IM_ItemAllocation"].Select("InventoryReceiptItemId=" + ri["RecId"].ToString()))
+	    { 
+	    	q = @"select case when v.x &gt; 0 then v.x else v.y end qty from (select (select isnull(sum(isnull(ri.Quantity,0)),0)
+				from IM_ItemAllocation ia with(nolock)
+				left join IM_ReceiptItem ri with(nolock) on ri.RecId = ia.InventoryReceiptItemId
+				where ia.InventoryId = replacei and ia.InventoryVariantId = replacev and ia.WorkOrderItemId = replacew and ri.ReceiptType = 11) x,
+				(select isnull(sum(isnull(ri.Quantity,0)),0)
+				from IM_ItemAllocation ia with(nolock)
+				left join IM_ReceiptItem ri with(nolock) on ri.RecId = ia.InventoryReceiptItemId
+				where ia.InventoryId = replacei and ia.InventoryVariantId = replacev and ia.WorkOrderItemId = replacew and ri.ReceiptType = 1) y) v";
+			
+			q = q.Replace("replacei", ia["InventoryId"].ToString());
+			q = q.Replace("replacev", ia["InventoryVariantId"].ToString());
+			q = q.Replace("replacew", ia["WorkOrderItemId"].ToString());
+			
+			r = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "r", q);
+		
+			if(r == null || r.Rows.Count &lt;= 0)
+				continue;
+			
+	        if(ri["Quantity"] &gt; r.Rows[0]["qty"])
+	        {
+	            BaseObject.ShowMessage("Çıkış miktarı gelen miktardan büyük olamaz! {scr:UretimeCikisGelenKontrol}");
+	            BaseObject.CurrentRow.Row.SetField&lt;|Int16|&gt;("IsApproved", 0);
+	            tms = BaseObject.Container.Resolve&lt;|TaskMessageService|&gt;("TaskMessageService");
+	            tms.SendEmail("murat.yildirim@enkayyazilim.com", "[Extreme] Üretime çıkış fişi onaylanmadı!", BaseObject.CurrentRow.Row["ReceiptNo"].ToString() + " numaralı üretime çıkış fişindeki miktarlar gelen miktarlardan fazla olduğu için fiş onaysız durumuna getirilmitir.");
+	            return null;
+	        }
+	    }
+	}
+}</ScriptText>
+</ScriptDefinition>

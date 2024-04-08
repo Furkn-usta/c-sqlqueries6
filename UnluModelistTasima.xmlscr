@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="ModelistKontrol" Enabled="true" Priority="0" ScriptName="UnluModelistTasima">
+  <Events>
+    <Event Enabled="true" ObjectName="CustomerTransactionEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="CustomerTransactionEN" />
+  </Events>
+  <Histories />
+  <ScriptText>function OnBeforePost(sender,eventArg){
+	//aşağidaki islemid= 2 yerine hangi işlem bitişi sonrasi script aktif olsun istiyorsanir onun recid yazin. İşlem kartlari CR_TransactionType 
+	islemId = 2;
+	
+	if(BaseObject!=null 
+	&amp;&amp; BaseObject.CurrentRow!=null 
+	&amp;&amp;BaseObject.CurrentRow.Row["TranStatus"].ToString() =="4"
+	&amp;&amp;BaseObject.CurrentRow.Row["TranTypeId"].ToString() ==islemId.ToString() )
+	{
+		invId = BaseObject.CurrentRow.Row["InventoryId"].ToString();
+		
+		query = "select * from IM_Item where RecId = "+invId;
+		dt = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction,  "dt", query);
+		if(dt != null &amp;&amp; dt.Rows.Count&gt;0 )
+		{
+			if( string.IsNullOrEmpty(dt.Rows[0]["EmployeeId"].ToString()))
+			{
+				BaseObject.ShowMessage("Model kartinda modelist bilgisi eksik. İşlem iptal edildi:Scr:ModelistKontrol");
+				eventArg.Cancel=true;
+				return null;
+			}
+		
+			
+			
+		
+		}
+		
+	
+	}
+		
+
+}</ScriptText>
+</ScriptDefinition>

@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="ÜretimGirişleriPersonelKontrol" Enabled="true" Priority="0" ScriptName="ÜretimGirişleriPersonelKontrol">
+  <Events>
+    <Event Enabled="true" ObjectName="TWorkOrderProductionEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="TWorkOrderProductionEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 12.12.2023 16:49:41 ÜretimGirişleriPersonelKontrol
+function OnBeforePost(sender, ev)
+{
+/*	*/
+    if(BaseObject == null 
+    || BaseObject.CurrentRow == null 
+    || BaseObject.CurrentRow.Row == null)
+    	return null;
+    
+    //MessageBox.Show(BaseObject.CurrentRow.Row["ProcessId"].ToString());
+    user_code = BaseObject.ActiveSession.User.UserCode;
+     pp = "select * from MA_Process P with (nolock) where RecId=" + BaseObject.CurrentRow.Row["ProcessId"].ToString();
+     pp_dt = UtilityFunctions.GetDataTableList(BaseObject.ActiveSession.DBInfo.DBProvider, BaseObject.ActiveSession.DBInfo.Connection, null, "pp_dt", pp);
+		
+	 if(pp_dt == null || pp_dt.Rows.Count &lt;= 0)
+			return null; 
+	//pp_dt.Rows[0]["Explanation"].ToString(); "Explanation" yerine açılacak özel alan yazılması gerekmektedir. Name 250 yeterlidir.
+	users_codes_ = pp_dt.Rows[0]["Explanation"].ToString();
+	
+			        if(!users_codes_.ToString().Contains(user_code))
+			        {
+			        	sender.ShowMessage("Yetkiniz Bulunmadığından Dolayı Kayıt Gerçekleştirilemez.. scr{ÜretimGirişleriPersonelKontrol}");
+				        ev.Cancel = true;
+				        return null;
+			        
+			        }
+}</ScriptText>
+</ScriptDefinition>

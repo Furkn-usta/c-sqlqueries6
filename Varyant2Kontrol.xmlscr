@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="Varyant2Kontrol" Enabled="true" Priority="0" ScriptName="Varyant2Kontrol">
+  <Events>
+    <Event Enabled="true" ObjectName="InventoryReceiptEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="InventoryReceiptEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 27.08.2022 15:43:46
+	function OnBeforePost(sender,eventArg){
+		if(BaseObject!=null 
+	&amp;&amp; BaseObject.CurrentRow!=null
+	&amp;&amp; BaseObject.CurrentRow.Row!=null
+	&amp;&amp; BaseObject.CurrentRow.Row.RowState!=DataRowState.Deleted 
+	&amp;&amp; BaseObject.CurrentRow.Row.RowState!=DataRowState.Detached)
+	{
+			BaseObject.ShowMessage("deneme");
+	
+		foreach(dr in BaseObject.Data.Tables["IM_ReceiptItem"].Select("InventoryId is not null"))
+		{	
+		BaseObject.ShowMessage("deneme1");
+	a="select i.Variant2TypeId from IM_ReceiptItem iri with (nolock) left join IM_Item i with (nolock) on i.RecId=iri.InventoryId left join IM_Receipt r with (nolock) on r.RecId=iri.InventoryReceiptId left join IM_ReceiptItemVariant iriv with (nolock) on iriv.InventoryReceiptItemId=iri.RecId	 left join IM_ItemVariant iv with (nolock) on iriv.InventoryVariantId=iv.RecId left join IM_VariantItem vi with (nolock) on iv.Variant2Id=vi.RecId where i.InventoryType=1 and iri.InventoryId="+dr["InventoryId"].ToString();
+    b=UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "b",a); 
+	BaseObject.ShowMessage("deneme2");
+	BaseObject.ShowMessage(b.Rows[0][0].ToString());
+		if(b == null || b.Rows.Count &lt;= 0)
+			return null;
+				
+				BaseObject.ShowMessage("deneme2");
+				
+	if(b.Rows[0][0]!=null ||b.Rows[0][0].ToString().Trim()!="")
+			{
+		BaseObject.ShowMessage("deneme3");
+			if(!dr.IsNull("ItemVariant2Code") &amp;&amp; dr["ItemVariant2Code"].ToString().Trim()=="")
+				{
+					BaseObject.ShowMessage("Kayıt Yapılamaz..! {src:VaryantKontrol}");
+					eventArg.Cancel=true;
+					return null;
+				}
+			}
+		 
+	}
+		 
+	}
+	}
+	
+
+</ScriptText>
+</ScriptDefinition>

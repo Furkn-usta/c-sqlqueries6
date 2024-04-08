@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="UretimeCikisAkseuarAciklamaTasima" Enabled="true" Priority="0" ScriptName="UretimeCikisAkseuarAciklamaTasima">
+  <Events>
+    <Event Enabled="true" ObjectName="InventoryReceiptEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="InventoryReceiptEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 27.01.2024 11:37:55 UretimeCikisAkseuarAciklamaTasima
+function OnBeforePost(sender,ev)
+{
+	if(BaseObject == null 
+	    || BaseObject.CurrentRow == null
+	    || BaseObject.CurrentRow.Row == null
+		|| BaseObject.CurrentRow.Row.IsNull("ReceiptType")
+		|| Convert.ToInt32(BaseObject.CurrentRow.Row["ReceiptType"]) != 140	 )
+			return null;
+        
+         foreach(ia in BaseObject.Data.Tables["IM_ItemAllocation"].Select("InventoryReceiptItemId is not null and InventoryVariantId is not null and WorkOrderItemId is not null")) 
+                {
+                foreach(ri in BaseObject.Data.Tables["IM_ReceiptItem"].Select("RecId is not null and InventoryId is not null")) 
+                        {
+                            if(Convert.ToInt32(ri["RecId"]) == Convert.ToInt32(ia["InventoryReceiptItemId"]))
+                            {
+                                sb = new StringBuilder();
+                                sb.Clear();
+                                sb.AppendLine("select isnull(I.ProducerInventoryCode,\'\')+\'-\'+isnull(WO.CustomerOrderNo,\'\')+\'-\'+isnull(VI.ItemCode,\'\')+\'-\'+isnull(VI2.ItemCode,\'\')[exp_]  from MA_WorkOrderItem WOI with (nolock) ");
+                                sb.AppendLine("left join MA_WorkOrder WO with (nolock) on WO.RecId=WOI.WorkOrderId");
+                                sb.AppendLine("left join IM_Item I with (nolock) on I.RecId=WO.InventoryId");
+                                sb.AppendLine("left join IM_ItemVariant IV  with (nolock) on IV.RecId=\'"+ia["InventoryVariantId"].ToString()+"\' ");
+                                sb.AppendLine("left join IM_VariantItem VI  with (nolock) on VI.RecId=IV.Variant1Id");
+                                sb.AppendLine("left join IM_VariantItem VI2 with (nolock) on VI2.RecId=IV.Variant2Id");
+                                sb.AppendLine("where  WOI.RecId=\'"+ia["WorkOrderItemId"].ToString()+"\'");
+                                sb.AppendLine("and WOI.WorkOrderSubType=1");
+
+                               // MessageBox.Show(sb.ToString());
+                                dt=UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt",sb.ToString());
+                                if(dt == null || dt.Rows.Count &lt;= 0)
+                                        return null;
+                                        
+							  expl_ = dt.Rows[0]["exp_"].ToString();	 
+							  ri.SetField&lt;|string|&gt;("Explanation",expl_.ToString());
+                            }
+                        }
+                }
+		
+}
+</ScriptText>
+</ScriptDefinition>

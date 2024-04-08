@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="Varyant2Kontrol" Enabled="true" Priority="0" ScriptName="Varyant2Kontrol">
+  <Events>
+    <Event Enabled="true" ObjectName="InventoryReceiptEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="InventoryReceiptEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 31.08.2022 14:32:11
+function OnBeforePost(sender, ev)
+{
+	if( BaseObject == null || BaseObject.CurrentRow == null || BaseObject.CurrentRow.Row == null)
+		return null;
+	
+    foreach(dr in BaseObject.Data.Tables["IM_ReceiptItem"].Select("InventoryId is not null"))
+    {	
+        a = "select isnull(Variant2TypeControlType,0) v2CtrlTypeId from IM_Itemwith (nolock) where isnull(InventoryType,0)=1 and RecId = " + dr["InventoryId"].ToString();
+        b = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "b", a);
+         
+        if(b != null &amp;&amp; b.Rows.Count &gt; 0 &amp;&amp; Convert.ToInt32(b.Rows[0]["v2CtrlTypeId"]) &gt; 0)	
+        {
+            if(dr.IsNull("ItemVariant2Code") || string.IsNullOrEmpty(dr["ItemVariant2Code"].ToString()))
+            {
+                BaseObject.ShowMessage("Aksesuar Tipi Varyant2 Seçili Oldğundan Boş Kayıt Yapılamaz..! {src:Varyant2Kontrol}");
+                ev.Cancel=true;
+                return null;
+            }
+        }
+    }	
+}
+</ScriptText>
+</ScriptDefinition>

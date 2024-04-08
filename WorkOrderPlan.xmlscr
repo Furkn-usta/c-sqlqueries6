@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="WorkOrderPlan" Enabled="true" Priority="0" ScriptName="WorkOrderPlan">
+  <Events>
+    <Event Enabled="true" ObjectName="WorkOrderPlanEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="WorkOrderPlanEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 25.2.2016 14:00:01
+function OnBeforePost(sender,ea)
+{   
+    if (BaseObject != null &amp;&amp; BaseObject.CurrentRow != null &amp;&amp; BaseObject.CurrentRow.Row != null)
+	{		
+	sb="select * from MA_WorkOrder with (nolock) where RecId in (select WorkOrderId from MA_WorkOrderItem with (nolock) where WorkOrderSubType = 1 and RecId ="+BaseObject.CurrentRow.Row["WorkOrderItemId"]+" )";
+	
+		
+		
+	 dt1 = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "MA_WorkOrder", sb);
+			
+	 if(dt1!=null &amp;&amp; dt1.Rows.Count&gt;0)
+		{		
+		     	
+	     v1=dt1.Rows[0]["UD_KombinKartlari"].ToString();
+	     sv=new string[1];
+	     sv[0]=",";
+	     valueTexts = v1.Split(sv,StringSplitOptions.RemoveEmptyEntries);
+	     
+	     
+	     quantity=0;
+	     	     
+	     foreach(val in valueTexts)
+	     {
+	     	     
+	     sb="select Quantity from MA_WorkOrderItem with (nolock) where WorkOrderSubType = 1 and WorkOrderId in (select RecId from MA_WorkOrder with (nolock) where CompanyId = "+dt1.Rows[0]["CompanyId"].ToString()+" and WorkOrderNo =\'"+ val +"\' )";
+	     	     
+	     dt = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "MA_WorkOrderItem",sb );
+			
+			if(dt!=null &amp;&amp; dt.Rows.Count&gt;0)
+			{
+			
+			  if(dt.Rows[0]["Quantity"] != null)
+			  {			  
+			      quantity=quantity+Convert.ToDecimal(dt.Rows[0]["Quantity"]);			  
+			  }
+			}			
+	     }
+	     
+	     }
+	     	     	     
+	     BaseObject.CurrentRow.Row.SetField&lt;|decimal|&gt;("Quantity",quantity);	     
+	}	  	    
+}</ScriptText>
+</ScriptDefinition>

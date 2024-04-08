@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="TransferFişiTahsisEdilemeyecekMiktar" Enabled="true" Priority="0" ScriptName="TransferFişiTahsisEdilemeyecekMiktar">
+  <Events>
+    <Event Enabled="true" ObjectName="InventoryReceiptEN" />
+    <Event Enabled="true" EventName="AfterSucceededPost" FunctionName="OnAfterSucceededPost" ObjectName="InventoryReceiptEN" />
+    <Event Enabled="false" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="InventoryReceiptEN" />
+  </Events>
+  <Histories />
+  <ScriptText>//Generated on 22.02.2024 16:16:40 TransferFişiTahsisEdilemeyecekMiktar
+ deleted_row = 0;
+function OnAfterSucceededPost(sender, ev)
+{
+	if(BaseObject==null 
+	|| BaseObject.CurrentRow==null
+	|| BaseObject.CurrentRow.Row==null
+	|| BaseObject.CurrentRow.Row.IsNull("ReceiptType")
+	|| Convert.ToInt32(BaseObject.CurrentRow.Row["ReceiptType"]) != 17
+	)
+		return null;
+		foreach(ri in BaseObject.Data.Tables["IM_ReceiptItem"].Select("InventoryId is not null and ExplanationCode is not null"))
+		{
+			/*
+			quantity_ = 0;
+			if(!ri.IsNull("Quantity"))
+			{
+				quantity_ = Convert.ToDecimal(ri["Quantity"])
+			}
+			*/
+			sb = new StringBuilder();
+            sb.Clear();
+            sb.AppendLine("select isnull(sum(isnull(RI.Quantity,0)),0) [transfer_mik] from IM_Receipt R");
+			sb.AppendLine("left join IM_ReceiptItem RI on RI.InventoryReceiptId=R.RecId");
+			sb.AppendLine("where R.ReceiptType = 17 and RI.InventoryId=\'"+ri["InventoryId"].ToString()+"\'");
+		//	MessageBox.Show(sb.ToString());
+			dt_sb = UtilityFunctions.GetDataTableList(BaseObject.Provider, BaseObject.Connection, BaseObject.Transaction, "dt_sb",sb.ToString());
+			if(dt_sb != null &amp;&amp; dt_sb.Rows.Count &gt; 0)
+            	{
+					trans_mik_ = Convert.ToDecimal(dt_sb.Rows[0]["transfer_mik"]);
+					str = "UPDATE IM_ReceiptItem set NoneAllocatableQuantity="+trans_mik_.ToString().Replace(",",".")+"";
+					str += " from IM_Receipt R with (nolock)";
+					str += " left join IM_ReceiptItem RI with (nolock) on RI.InventoryReceiptId=R.RecId";
+					str += " where RI.ReceiptType in (1)";
+					str += " and RI.RecId=\'"+ri["ExplanationCode"].ToString()+"\'";
+			//	MessageBox.Show(str.ToString());
+			UtilityFunctions.SqlCustomScalarQuery(BaseObject.Connection,null,str.ToString());
+		//	MessageBox.Show(global:deleted_row.ToString());
+				}
+		}
+
+}
+/*
+function OnBeforePost(sender, ev)
+{
+	if(BaseObject==null 
+	|| BaseObject.CurrentRow==null
+	|| BaseObject.CurrentRow.Row==null
+	|| BaseObject.CurrentRow.Row.IsNull("ReceiptType")
+	|| Convert.ToInt32(BaseObject.CurrentRow.Row["ReceiptType"]) != 17
+	)
+		return null;
+foreach(dr in BaseObject.Data.Tables["IM_ReceiptItem"].Select("InventoryId is not null and ExplanationCode is not null"))
+		{
+		 if(dr.RowState == DataRowState.Deleted)
+                {
+				global:deleted_row = Convert.ToInt32(dr["ExplanationCode"]);
+		MessageBox.Show("Before="+global:deleted_row.ToString());
+			}
+}
+}		*/</ScriptText>
+</ScriptDefinition>

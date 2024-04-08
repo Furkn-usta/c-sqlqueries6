@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<ScriptDefinition xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Description="Üretim emrinde üretim tipi seçilmesi zorunlu" Enabled="false" Priority="0" ScriptName="Üretim Tipi Kontrol">
+  <Events>
+    <Event Enabled="true" ObjectName="WorkOrderEN" />
+    <Event Enabled="true" EventName="BeforePost" FunctionName="OnBeforePost" ObjectName="WorkOrderEN" />
+  </Events>
+  <Histories />
+  <ScriptText>function OnBeforePost (sender,eventArg)
+{
+	 if(BaseObject!=null &amp;&amp; BaseObject.CurrentRow!=null &amp;&amp; BaseObject.CurrentRow.Row!=null &amp;&amp; String.IsNullOrEmpty(BaseObject.CurrentRow.Row["ManufacturingTypeId"]) &amp;&amp; !BaseObject.CurrentRow.Row.IsNull("WorkOrderType") &amp;&amp; BaseObject.CurrentRow.Row["WorkOrderType"].ToString()=="10" )
+ 	 {
+ 	 	
+		BaseObject.ShowMessage("Üretim Tipi seçilmedi!"+"{Scr:Üretim Tipi Kontrol}");
+			
+	 }
+}
+</ScriptText>
+</ScriptDefinition>
